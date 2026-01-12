@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Signup — CareerCraft</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-container">
+    <div class="dialogue-box" style="position:relative; margin:120px auto; max-width:420px;">
+      <h2>Create account</h2>
+      <label>Full name</label>
+      <input id="fullName" class="name-input" type="text">
+      <label>Email</label>
+      <input id="email" class="name-input" type="email">
+      <label>Password</label>
+      <input id="password" class="name-input" type="password">
+      <div style="margin-top:12px;">
+        <button id="signupBtn" class="arrow-button">Sign up</button>
+        <a href="login.html" style="margin-left:12px;">Already have an account?</a>
+      </div>
+      <p id="msg" style="color:crimson;margin-top:8px;"></p>
+    </div>
+  </div>
+  <script>
+    // Very small client-side signup (prototype only)
+    document.getElementById('signupBtn').addEventListener('click', () => {
+      const name = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const pass = document.getElementById('password').value;
+      const msg = document.getElementById('msg');
+      if (!name || !email || !pass) { msg.textContent = "Fill all fields"; return; }
+
+      // store account in localStorage (demo only)
+      const users = JSON.parse(localStorage.getItem('cc_users') || '{}');
+      if (users[email]) { msg.textContent = "Account already exists. Please login."; return; }
+
+      users[email] = { name, password: pass };
+      localStorage.setItem('cc_users', JSON.stringify(users));
+      // auto-login
+      localStorage.setItem('cc_user_email', email);
+      localStorage.setItem('cc_user_name', name);
+      localStorage.setItem('cc_logged_in', '1');
+      window.location.href = 'dashboard.html';
+    });
+  </script>
+</body>
+</html>

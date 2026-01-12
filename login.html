@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — CareerCraft</title>
+  <link rel="stylesheet" href="frontend/style.css">
+</head>
+<body> 
+  <div class="page-container">
+    <div class="main-content">
+      <header class="logo">
+        <span class="logo-icon">Cō</span>
+        <span class="logo-text">CareerCraft</span>
+      </header>
+ <div class="main-content">     
+
+    <div class="hero-text">
+      <p class="subtitle">DISCOVER YOUR EDGE</p>
+      <p class="steps">STEP INTO YOUR</p>
+      <h1>FUTURE</h1>
+      <p class="smartly">SMARTLY</p>
+    </div>
+            
+            <div class="feature-cards">
+                <div class="card skill-analysis">
+                    <p class="title">Skill Analysis</p>
+                    <p class="description">Understand where you stand</p>
+                </div>
+                <div class="card resume-builder">
+                    <p class="title">Resume Builder</p>
+                    <p class="description">Build your future-ready profile.</p>
+                </div>
+            </div>
+        </div>
+
+      <div class="feature-cards">
+        <div class="card skill-analysis">
+          <p class="title">Skill Analysis</p>
+          <p class="description">Understand where you stand</p>
+        </div>
+        <div class="card resume-builder">
+          <p class="title">Resume Builder</p>
+          <p class="description">Build your future-ready profile.</p>
+        </div>
+      </div>
+    </div>
+    
+<img src="frontend\assets\Robot.png" alt="Friendly AI Robot waving" class="robot-image">
+
+    <div class="dialogue-box" style="position:relative; margin:230px auto; max-width:400px;">
+      <h2>Login</h2>
+      <label>Email</label>
+      <input id="email" class="name-input" type="email">
+      <label>Password</label>
+      <input id="password" class="name-input" type="password">
+      <div style="margin-top:12px;">
+        <button id="loginBtn" class="arrow-button">Login</button>
+        <a href="signup.html" style="margin-left:12px;">Sign up</a>
+      </div>
+      <p id="msg" style="color:crimson;margin-top:8px;"></p>
+    </div>
+    <div class="interaction-area">
+            
+            
+
+      <div class="sidebar-1">
+                <p class="sidebar-text ai-powered">AI-POWERED</p>
+            </div>
+            <div class="sidebar-2">
+                <p class="sidebar-text career-solutions">GUIDED BY DATA</p>
+        </div>
+  </div>
+
+  <script>
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const pass = document.getElementById('password').value;
+      const msg = document.getElementById('msg');
+
+      const users = JSON.parse(localStorage.getItem('cc_users') || '{}');
+      const user = users[email];
+      if (!user || user.password !== pass) { msg.textContent = "Invalid credentials"; return; }
+
+      localStorage.setItem('cc_user_email', email);
+      localStorage.setItem('cc_user_name', user.name);
+      localStorage.setItem('cc_logged_in', '1');
+      window.location.href = "frontend/dashboard.html";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+/* --- Basic Reset and Fonts --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif; /* Approximation */
+    background-color: #f7faff; /* Very light blue background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* --- Main Container --- */
+.page-container {
+    width: 1200px; /* Target resolution for a clean desktop view */
+    height: 700px; 
+    display: flex;
+    position: relative;
+    overflow: hidden; /* Hide the edges of the abstract shapes */
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    background-color: white;
+}
+
+/* --- Left Content: Logo and Hero Text --- */
+.main-content {
+    flex: 1.5; /* Takes more space than the interaction area */
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    z-index: 2; /* Ensure text is above background shapes */
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-size: 1.5em;
+    font-weight: 700;
+    margin-bottom: 80px;
+    color: #007bff; /* Primary Blue for Logo */
+}
+
+.logo-icon {
+    font-size: 1.8em;
+    font-weight: 800;
+    margin-right: 5px;
+}
+
+.hero-text {
+    line-height: 1.1;
+}
+
+.subtitle {
+    font-size: 0.9em;
+    font-weight: 400;
+    color: #4a4a4a;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.steps {
+    font-size: 1.5em;
+    font-weight: 300;
+    color: #4a4a4a;
+    margin-bottom: 5px;
+}
+
+h1 {
+    font-size: 6em;
+    font-weight: 800;
+    color: black;
+    letter-spacing: -3px;
+    line-height: 0.8;
+}
+
+.smartly {
+    font-size: 1.2em;
+    font-weight: 400;
+    color: #4a4a4a;
+    margin-top: 10px;
+    letter-spacing: 1px;
+}
+
+/* --- Background Shapes (The 'Edge' Decor) --- */
+/* These abstract shapes are the most difficult to replicate exactly without SVGs. 
+   We use pseudo-elements to approximate the curves. */
+.page-container::before,
+.page-container::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    z-index: 1; 
+}
+
+/* Large light shape */
+.page-container::before {
+    width: 800px;
+    height: 800px;
+    top: -150px;
+    bottom: auto;
+    right: -90px;
+     background: linear-gradient(to bottom, #D8E6EF, #c5dde5); /* Very light blue wash */
+}
+
+/* Smaller green/teal shape */
+.page-container::after {
+    width: 150px;
+    height: 150px;
+    bottom: -50px;
+    right: 180px;
+    background: #50c8b3; /* Teal approximation */
+    opacity: 0.6;
+}
+
+
+/* --- Right Interaction Area --- */
+.interaction-area {
+    flex: 1; /* Less space than main-content */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.robot-image {
+    width: 500px; /* Adjust size to match the image */
+    height: auto;
+    position: absolute;
+    bottom: 100px;
+    right: 300px;
+    z-index: 3;
+    /* NOTE: The actual illustration is complex. This assumes a transparent PNG/WebP. */
+}
+
+/* Dialogue Box */
+.dialogue-box {
+    position: absolute;
+    top: 150px;
+    right: 120px;
+    background-color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    z-index: 4;
+    min-width: 250px;
+}
+
+.dialogue-box p {
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}
+
+.name-input {
+    border: none;
+    border-bottom: 2px solid black;
+    width: 100%;
+    padding: 2px 0;
+    outline: none;
+    font-size: 1.1em;
+}
+
+/* --- Feature Cards (Bottom) --- */
+.feature-cards {
+    display: flex;
+    justify-content: space-between;
+    width: 400px; /* Match the width of the robot area visually */
+    position: absolute;
+    bottom: 50px;
+    left: 60px;
+}
+
+.card {
+    width: 48%;
+    text-align: center;
+    padding: 10px 5px;
+}
+
+.card .title {
+    font-size: 0.9em;
+    font-weight: 700;
+    color: #4a4a4a;
+}
+
+.card .description {
+    font-size: 0.75em;
+    color: #888;
+    line-height: 1.2;
+}
+
+/* --- Sidebar --- */
+.sidebar-1, .sidebar-2 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50px;
+    height: 50%;
+    background: linear-gradient(to top, #50c8b3, #33a08d); /* Green/Teal Gradient */
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    padding: 50px 0;
+    z-index: 5;
+}
+.sidebar-1 {
+    top: 0;
+    background-color: #33a08d;
+}
+.sidebar-2 {
+    top: 350px;
+    background-color: #313f3d;
+}
+
+
+.sidebar-text {
+    color: white;
+    font-size: 0.8em;
+    font-weight: 300;
+    writing-mode: vertical-rl; /* Rotate text */
+    text-orientation: mixed;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    transform: rotate(180deg); /* Rotate again to read bottom-up */
+}
+
+.ai-powered {
+    margin-top: 50px; /* Space from the top */
+}
+
+.guided-by-data {
+    margin-bottom: 50px; /* Space from the bottom */
+}
+/* Input + arrow row inside the dialogue box */
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Make the existing .name-input flex nicely */
+.name-row .name-input {
+  flex: 1;
+}
+
+/* Small blue circular arrow button */
+.arrow-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.arrow-button:hover {
+  background-color: #005ec2;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+}
+
+/* 2×2 grid of blue boxes on dashboard */
+.options-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.action-card {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.2;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.action-card:hover {
+  background-color: #005ec2;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
