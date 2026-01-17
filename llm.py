@@ -46,7 +46,7 @@ and also provide courses for the missing skills ,with links from sites like cour
 ### 3. Career Role Alignment
 - Check if the student’s resume aligns well with the Job they are going for
 - If not, suggest 1–2 alternative job roles that align better with their skills.
-- For each suggested role, give a short description and why it could be a better match.
+- For each suggested role, give a short description and why it could be a better match.But dont repeat the same job title as in the jd.
 
 Keep your tone supportive, clear, and practical. Avoid generic advice — make suggestions personalized to the provided resume and JD
 
