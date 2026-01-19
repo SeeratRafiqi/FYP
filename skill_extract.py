@@ -19,7 +19,7 @@ model = load_model()
 # ----------------------------------------------------
 @st.cache_data
 def load_skill_db():
-    #r mean read mode
+    #r means read mode
     with open("skills.json", "r") as f:
         skill_db = json.load(f)
     all_skills = set(skill.lower() for cat in skill_db.values() for skill in cat)
@@ -43,55 +43,90 @@ ALL_SKILL_LIST, ALL_SKILL_EMB = get_skill_embeddings()
 # ----------------------------------------------------
 def normalize_text(text):
     text = text.lower()
-    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)
+    #here we remove any special characters except + . #
+    text = re.sub(r'[^a-zA-Z0-9\s\.\+\#]', ' ', text)
+    #replace multiple spaces with single space
+    text = re.sub(r'\s+', ' ', text).strip()
     return text
 
+
 def clean_tokens(text):
-    tokens = re.findall(r'\b[a-zA-Z0-9\-\+\.\#]+\b', text.lower())
-    return list(set(tokens))
+    return list(set(
+        re.findall(r'\b[a-zA-Z0-9\-\+\.\#]+\b', text.lower())
+    ))
+
+#we are generating phrases of length 2 to max_len (default 3), e.g., "machine learning", "data science engineer",power bi 
+# we are doing this because some skills are multi-word phrases
+def generate_phrase_tokens(text, max_len=3):
+    words = text.split()
+    phrases = []
+    for n in range(2, max_len + 1):
+        for i in range(len(words) - n + 1):
+            phrases.append(" ".join(words[i:i+n]))
+    return phrases
+
+
+def exact_skill_match(token):
+    #Checks if a token exactly matches a known skill If yes → return itIf not → return None
+    return token if token in ALL_SKILLS else None
+
 
 # ----------------------------------------------------
 # STEP 5 — Semantic skill extraction for resume
 # ----------------------------------------------------
 def get_resume_details(resume_text):
     clean_text = normalize_text(resume_text)
-    tokens = clean_tokens(clean_text)
+
+    tokens = clean_tokens(clean_text) + generate_phrase_tokens(clean_text)
     found_skills = set()
 
     for token in tokens:
+        # Exact match first
+        exact = exact_skill_match(token)
+        if exact:
+            found_skills.add(exact)
+            continue
+
         token_emb = model.encode(token, convert_to_tensor=True)
         cos_scores = util.cos_sim(token_emb, ALL_SKILL_EMB)
         max_idx = cos_scores.argmax().item()
+
         if cos_scores[0][max_idx] > 0.75:
             found_skills.add(ALL_SKILL_LIST[max_idx])
 
     return {"skills": list(found_skills), "raw_text": clean_text}
+
 
 # ----------------------------------------------------
 # STEP 6 — Extract skills from JD
 # ----------------------------------------------------
 def extract_skills_from_jd(jd_text):
     jd_clean = normalize_text(jd_text)
-    tokens = clean_tokens(jd_clean)
+
+    tokens = clean_tokens(jd_clean) + generate_phrase_tokens(jd_clean)
     found_skills = set()
 
     for token in tokens:
+        exact = exact_skill_match(token)
+        if exact:
+            found_skills.add(exact)
+            continue
+
         token_emb = model.encode(token, convert_to_tensor=True)
         cos_scores = util.cos_sim(token_emb, ALL_SKILL_EMB)
         max_idx = cos_scores.argmax().item()
-        
+
         if cos_scores[0][max_idx] > 0.75:
             found_skills.add(ALL_SKILL_LIST[max_idx])
 
     return found_skills
+
 
 # ----------------------------------------------------
 # STEP 7 — Compare resume and JD
 # ----------------------------------------------------
 def compare_resume_with_jd(resume_details, jd_text):
     jd_skills = extract_skills_from_jd(jd_text)
-    # we are not calling function directly bcz we need skills only 
-    # the function is extracting other stuff also for llm analysis
     resume_skills = resume_details["skills"]
 
     if not jd_skills or not resume_skills:
@@ -101,11 +136,9 @@ def compare_resume_with_jd(resume_details, jd_text):
             "keyword_similarity": 0
         }
 
-    # Generate embeddings
     resume_embeddings = model.encode(list(resume_skills), convert_to_tensor=True)
     jd_embeddings = model.encode(list(jd_skills), convert_to_tensor=True)
 
-    # Cosine similarity
     cos_scores = util.cos_sim(jd_embeddings, resume_embeddings)
 
     matched_skills = []
@@ -115,8 +148,10 @@ def compare_resume_with_jd(resume_details, jd_text):
 
     missing_skills = list(jd_skills - set(matched_skills))
 
-    # TF-IDF similarity for overall keyword overlap
-    tfidf = TfidfVectorizer()
+    tfidf = TfidfVectorizer(
+        token_pattern=r"(?u)\b\w[\w\+\.\#]+\b",
+        ngram_range=(1, 2)
+    )
     vectors = tfidf.fit_transform([resume_details["raw_text"], jd_text])
     keyword_sim = cosine_similarity(vectors[0], vectors[1])[0][0]
 
@@ -125,6 +160,7 @@ def compare_resume_with_jd(resume_details, jd_text):
         "missing_skills": missing_skills,
         "keyword_similarity": round(keyword_sim * 100, 2)
     }
+
 
 # ----------------------------------------------------
 # STEP 8 — Final score calculation
@@ -138,4 +174,4 @@ def get_final_score_and_suggestions(analysis):
     keyword_score = (analysis["keyword_similarity"] / 100) * 30
     final_score = round(skill_score + keyword_score, 2)
 
-    return final_score, round(keyword_score, 2),round(skill_score, 2)
+    return final_score, round(keyword_score, 2), round(skill_score, 2)

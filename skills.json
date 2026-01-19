@@ -1,7 +1,7 @@
 {
   "Programming": ["Java", "C++", "JavaScript", "R", "Go", "Python", "HTML", "CSS", "PHP", "Ruby", "Swift", "Kotlin", "Rust", "TypeScript", "Scala", "Perl", "MATLAB", "Shell Scripting", "Dart"],
   
-  "Web Development": ["React", "Angular", "Vue.js", "Node.js", "Django", "Flask", "Ruby on Rails", "Next.js", "Nuxt.js", "Svelte", "Bootstrap", "TailwindCSS", "GraphQL", "REST API"],
+  "Web Development": ["React", "Angular", "Vue.js", "Node.js", "Django", "Flask", "Ruby on Rails", "Next.js", "Nuxt.js", "Svelte", "Bootstrap", "Tailwind CSS", "GraphQL"],
   
   "Mobile Development": ["Android", "iOS", "Flutter", "React Native", "SwiftUI", "Kotlin Multiplatform", "Xamarin"],
   

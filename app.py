@@ -2,6 +2,8 @@ import streamlit as st
 import time
 from datetime import timezone
 from zoneinfo import ZoneInfo
+from course_search import find_courses_for_skill
+
 
 # --- 1. CONFIGURATION ---
 st.set_page_config(page_title="CareerCraft AI", page_icon="🚀", layout="wide")
@@ -144,6 +146,8 @@ else:
             st.session_state['jd_text_area'] = session_data['jd_text']
             st.session_state['target_role_input'] = session_data['job_title']
 
+                # ✅ IMPORTANT: clear old LLM output
+            st.session_state['last_analysis'] = None
             st.session_state['edit_session_id'] = session_data['id']
             st.session_state['current_page'] = "📊 Dashboard & Analyzer"
             st.rerun()
@@ -157,6 +161,19 @@ else:
         default_index = 0 if st.session_state.get('current_page') == "📊 Dashboard & Analyzer" else 1
         
         selected_page = st.radio("Navigate", nav_list, index=default_index, key="main_navigation")
+        st.markdown("---")
+
+    # New Chat (session-level reset, like ChatGPT)
+        if st.button("🧹 New Chat", use_container_width=True):
+            # Reset ONLY safe state (do NOT touch widgets directly)
+            st.session_state['resume_text'] = ""
+            st.session_state['jd_text'] = ""
+            st.session_state['target_role'] = ""
+            st.session_state['last_analysis'] = None
+            st.session_state['edit_session_id'] = None
+            st.session_state['is_editing'] = False
+
+            st.rerun()
         
         if selected_page != st.session_state['current_page']:
             st.session_state['current_page'] = selected_page
@@ -216,15 +233,16 @@ else:
 
         # EDIT MODE BANNER
         if is_editing:
-            st.warning(f"✏️ Editing Analysis #{st.session_state['edit_session_id']}")
-            if st.button("Cancel Edit"):
-                st.session_state['edit_session_id'] = None
-                st.session_state['resume_text'] = ""
-                st.session_state['jd_text'] = ""
-                st.session_state['target_role'] = ""
-                if 'resume_text_area' in st.session_state: del st.session_state['resume_text_area']
-                if 'jd_text_area' in st.session_state: del st.session_state['jd_text_area']
-                st.rerun()
+            st.warning(f"✏️ Editing Analysis ")
+            # if st.button("Cancel Edit"):
+            #     st.session_state['last_analysis'] = None
+            #     st.session_state['edit_session_id'] = None
+            #     st.session_state['resume_text'] = ""
+            #     st.session_state['jd_text'] = ""
+            #     st.session_state['target_role'] = ""
+            #     if 'resume_text_area' in st.session_state: del st.session_state['resume_text_area']
+            #     if 'jd_text_area' in st.session_state: del st.session_state['jd_text_area']
+            #     st.rerun()
 
         # INPUTS
         st.subheader("🧠 New Analysis" if not is_editing else "✏️ Edit Analysis")
@@ -270,6 +288,14 @@ else:
                         crud.update_existing_analysis(db_session, sid, st.session_state['resume_text'], st.session_state['jd_text'])
                         crud.refresh_analysis_results(db_session, sid, data)
                         db_session.commit()
+                        st.session_state['last_analysis'] = {
+                            "sc": sc,
+                            "kw": kw,
+                            "sk": sk,
+                            "an": an,
+                            "llm": llm,
+                            "role": st.session_state['target_role']}
+                        
                         st.success("Updated!")
                         st.session_state['edit_session_id'] = None
                     else:
@@ -317,14 +343,37 @@ else:
                         st.markdown(llm_career)
                     with t3:
                         c1, c2 = st.columns(2)
+
+                        # -------- Missing Skills --------
                         with c1:
                             st.error("Missing Skills")
-                            for skills in an['missing_skills']:
-                                st.write(f"- {skills}")
+
+                            if an['missing_skills']:
+                                for skill in an['missing_skills']:
+                                    st.write(f"- {skill}")
+
+                                st.markdown("### 📘 Learning Resources")
+
+                                with st.expander("View courses for missing skills"):
+                                    for skill in an['missing_skills']:
+                                        st.markdown(f"**🔹 {skill}**")
+                                        courses = find_courses_for_skill(skill)
+
+                                        for c in courses:
+                                            st.markdown(f"- [{c['title']}]({c['link']})")
+                                            if c.get("snippet"):
+                                                st.caption(c["snippet"])
+                            else:
+                                st.success("No missing skills 🎉")
+
+                        # -------- Matched Skills --------
                         with c2:
                             st.success("Matched Skills")
-                            for skills in an['matched_skills']:
-                                st.write(f"- {skills}")
+                            for skill in an['matched_skills']:
+                                st.write(f"- {skill}")
+
+
+
 
                     with t4:
                         jobs = find_jobs_realtime(st.session_state['target_role'])
@@ -332,6 +381,7 @@ else:
                             for j in jobs: st.markdown(f"[{j['title']}]({j['link']})")
 
         db_session.close()
+
 
     # ---------------------------
     # PAGE: HISTORY
