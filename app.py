@@ -3,7 +3,10 @@ import time
 from datetime import timezone
 from zoneinfo import ZoneInfo
 from course_search import find_courses_for_skill
-
+from collections import defaultdict
+import pandas as pd
+import altair as alt
+from collections import defaultdict
 
 # --- 1. CONFIGURATION ---
 st.set_page_config(page_title="CareerCraft AI", page_icon="🚀", layout="wide")
@@ -18,6 +21,23 @@ from llm import analyze_with_llm
 from database.connection import engine, Base, SessionLocal
 from database import crud
 from job_search import find_jobs_realtime
+# --- THEME STYLING ---
+st.markdown("""
+    <style>
+    /* Main background */
+    .stApp {
+        background-color: #0E1117;
+    }
+    
+    
+
+    /* Metric Styling */
+    [data-testid="stMetricValue"] {
+        color: #00f2fe;
+        font-size: 37px;
+   
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- 3. DATABASE ---
 Base.metadata.create_all(bind=engine)
@@ -58,7 +78,19 @@ def show_login_page():
             color: #4CAF50;
             font-size: 2.7rem !important;
             letter-spacing: 2px;
-        }
+        } }
+    [data-testid="stMetricLabel"] {
+        color: #a0a0a0;
+    }
+
+    /* Subheader styling */
+    h3 {
+        color: #f0f2f6;
+        font-family: 'Inter', sans-serif;
+        font-weight: 300;
+        letter-spacing: 0.5px;
+        font-size: 1.1rem !important;
+    }
         </style>
     """, unsafe_allow_html=True)
 
@@ -121,7 +153,7 @@ else:
     if 'jd_text' not in st.session_state: st.session_state['jd_text'] = ""
     if 'target_role' not in st.session_state: st.session_state['target_role'] = ""
     if 'edit_session_id' not in st.session_state: st.session_state['edit_session_id'] = None
-    if 'current_page' not in st.session_state: st.session_state['current_page'] = "📊 Dashboard & Analyzer"
+    if 'current_page' not in st.session_state: st.session_state['current_page'] = "📊 Dashboard"
 
     # --- HELPER FUNCTIONS ---
     @st.dialog("Confirm Deletion")
@@ -149,7 +181,7 @@ else:
                 # ✅ IMPORTANT: clear old LLM output
             st.session_state['last_analysis'] = None
             st.session_state['edit_session_id'] = session_data['id']
-            st.session_state['current_page'] = "📊 Dashboard & Analyzer"
+            st.session_state['current_page'] = "🧪 Analysis"
             st.rerun()
 
     # --- SIDEBAR ---
@@ -157,8 +189,18 @@ else:
         st.image("https://cdn-icons-png.flaticon.com/512/4712/4712009.png", width=80)
         st.title("CareerCraft")
         
-        nav_list = ["📊 Dashboard & Analyzer", "📜 History"]
-        default_index = 0 if st.session_state.get('current_page') == "📊 Dashboard & Analyzer" else 1
+        nav_list = ["📊 Dashboard","🧪 Analysis", "📜 History"]
+        #default_index = 0 if st.session_state.get('current_page') == "🧪 Analysis" else 1
+        page_to_index = {
+            "📊 Dashboard": 0,
+            "🧪 Analysis": 1,
+            "📜 History": 2
+    }
+
+        default_index = page_to_index.get(
+                st.session_state.get('current_page'),
+                0
+            )
         
         selected_page = st.radio("Navigate", nav_list, index=default_index, key="main_navigation")
         st.markdown("---")
@@ -186,16 +228,265 @@ else:
             st.rerun()
 
     # --- PAGES ---
-    page = st.session_state.get('current_page', "📊 Dashboard & Analyzer")
+    page = st.session_state.get('current_page', "🧪 Analysis")
     
+   # ---------------------------
+# PAGE: DASHBOARD
+# ---------------------------
+
+# ---------------------------
+    CARD_HEIGHT = 273
+    CHART_PADDING = {"left": 10, "right": 10, "top": 10, "bottom": 20}
+
+    if page == "📊 Dashboard":
+        
+        st.title("📊 Dashboard")
+        st.markdown("""  <style>
+    /* Softer background */
+    .stApp {  }
+
+    /* More rounded cards */
+    div[data-testid="stVerticalBlock"] > div:has(div.stExpander, div.element-container) {
+       padding-top: 10px !important;
+       padding-bottom: 10px !important;
+       padding-left: 15px !important;
+       padding-right: 15px !important;
+
+        background-color: #1e293b;
+        border-radius: 20px !important; /* Extra rounded for a friendly feel */
+        border: 1px solid #334155;
+    }
+
+    /* Supportive Metrics */
+    [data-testid="stMetricValue"] {
+        color: #72efdd !important;
+        font-size: 40px !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Warm headers */
+    h3 {
+        color: #f8fafc !important;
+        font-family: 'Inter', sans-serif;
+        font-weight: 400 !important;
+        font-size: 1.1rem !important;
+    }
+        CARD_HEIGHT = 240
+       CHART_PADDING = {"left": 20, "right": 20, "top": 10, "bottom": 20}
+
+    </style>""", unsafe_allow_html=True)
+       
+   
+    # --- HEADER ---
+        st.markdown(f"## 👋 Hi, {CURRENT_USER_NAME}!")
+        
+        db = next(get_db())
+        last_session = crud.get_latest_session(db, CURRENT_USER_ID)
+        history = crud.get_user_history(db, CURRENT_USER_ID)
+        db.close()
+
+        # --- TOP KPI ROW (The "Inspiration" Look) ---
+        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+        #st.markdown(f"""<div style="font-size: 1.1rem !important;"></div>""", unsafe_allow_html=True)
+        total_scans = len(history)
+        avg_total_fit = sum([s.output.fit_score for s in history if s.output]) / total_scans if total_scans > 0 else 0
+        history_sorted = sorted(history, key=lambda x: x.timestamp)
+        fit_scores = [s.output.fit_score for s in history_sorted if s.output]
+
+        trend_label = "Not enough data"
+
+        if len(fit_scores) >= 3:
+            recent_avg = sum(fit_scores[-2:]) / 2
+            previous_avg = sum(fit_scores[:-2]) / len(fit_scores[:-2])
+
+            if recent_avg > previous_avg + 2:
+                trend_label = "📈 Improving"
+            elif recent_avg < previous_avg - 2:
+                trend_label = "📉Needs Attention"
+            else:
+                trend_label = "➖ Stable"
+        
+        with m_col1:
+            st.metric("Total Scans", total_scans)
+        with m_col2:
+            st.metric("Avg Fit Score", f"{avg_total_fit:.1f}%")
+        with m_col3:
+            if last_session and last_session.output:
+                st.metric("Latest Score", f"{last_session.output.fit_score}%")
+            else:
+                st.metric("Latest Score", "N/A")
+        with m_col4:
+         st.metric("Progress Trend", trend_label)
+          
+
+
+        st.markdown("---")
+
+        # --- LAST SCAN HERO BANNER ---
+        if last_session:
+            match_score = last_session.output.fit_score if last_session.output else 0
+            job_role = last_session.output.best_suited_job if last_session.output else "N/A"
+            st.markdown(f"""
+                <div style="  background: #161a24; width: 100%;  padding: 18px; border-radius: 10px; border-left: 4px solid #4facfe;margin-bottom: 20px;">
+                    <p style="color:#a0a0a0; margin:0; font-size: 1.0rem; font-weight: 500; text-transform: uppercase;">Our recent discovery</p>
+                    <h2 style="color:white; margin:0; font-size: 1.5rem;">{job_role} </span></h2>
+                    
+                </div>""", unsafe_allow_html=True)
+
+        # Two-column layout for dashboard cards
+        col1, col2 = st.columns(2)
+
+        # Prep Data (Your core logic)
+        role_scores = defaultdict(list)
+        for s in history:
+            if not s.output or not s.output.best_suited_job: continue
+            role = s.output.best_suited_job.strip().title()
+            role_scores[role].append(s.output.fit_score)
+
+        # =========================
+        # CARD 1: FIT SCORE BY ROLE (Aesthetic Bar)
+        # =========================
+        with col1:
+            st.subheader("📈 How well you align with your goals?")
+            
+            avg_scores = [{"Role": r, "Score": sum(sc)/len(sc)} for r, sc in role_scores.items()]
+            if not avg_scores:
+                st.info("No data")
+            else:
+                df = pd.DataFrame(avg_scores)
+
+                chart = (
+                    alt.Chart(df)
+                    .mark_bar(cornerRadiusTopLeft=8, cornerRadiusTopRight=8, color="#479db0")
+                    .encode(
+                        x=alt.X("Role:N", axis=alt.Axis(labelAngle=-40, title="Analyzed Job Roles")),
+                        y=alt.Y("Score:Q", axis=alt.Axis(grid=False, title="Avg Fit Score")),
+                        tooltip=["Role", alt.Tooltip("Score:Q", format=".2f")]
+                    )
+                    .properties(height=CARD_HEIGHT, padding=CHART_PADDING)
+                    .configure_view(strokeOpacity=0)
+                )
+
+                st.altair_chart(chart, use_container_width=True)
+
+
+        # =========================
+        # CARD 2: TOP ROLES (Vibrant Ranking)
+        # =========================
+        with col2:
+            st.subheader("🏆 Roles That Best Fit Your Skills")
+
+            if not role_scores:
+                st.info("No data")
+            else:
+                df_top = (
+                    pd.DataFrame(
+                        [{"Role": r, "Score": sum(sc)/len(sc)} for r, sc in role_scores.items()]
+                    )
+                    .sort_values("Score", ascending=False)
+                    .head(3)
+                )
+                chart = (
+                    alt.Chart(df_top)
+                    .mark_bar(cornerRadiusEnd=8)
+                    .encode(
+                        x=alt.X("Score:Q", title="Avg Fit Score"),
+                        y=alt.Y("Role:N", sort='-x', title="Analyzed Job Roles"),
+                        color=alt.Color(
+                            "Role:N",
+                            scale=alt.Scale(range=["#5a4479", "#7932b2", "#cf90ff"]),
+                            legend=None
+                        ),
+                        tooltip=["Role", alt.Tooltip("Score:Q", format=".2f")]
+                    )
+                    .properties(height=CARD_HEIGHT, padding=CHART_PADDING)
+                    .configure_view(strokeOpacity=0)
+                )
+
+                st.altair_chart(chart, use_container_width=True)
+        # =========================
+        # CARD 3: RESUME STRENGTH (Minimalist Donut)
+        # =========================
+        with col1:
+            st.subheader("🧠 Your Skill Coverage Overview")
+
+            matched = sum(1 for s in history for sk in getattr(s, "skills", []) if sk.status == "MATCHED")
+            missing = sum(1 for s in history for sk in getattr(s, "skills", []) if sk.status == "MISSING")
+
+            if matched + missing == 0:
+                st.info("No skill data")
+            else:
+                df = pd.DataFrame({
+                    "Status": ["Matched", "Missing"],
+                    "Count": [matched, missing]
+                })
+
+                chart = (
+                    alt.Chart(df)
+                    .mark_arc(innerRadius=50, outerRadius=105, stroke="#161a24", strokeWidth=2)
+                    .encode(
+                        theta="Count:Q",
+                        color=alt.Color(
+                            "Status:N",
+                            scale=alt.Scale(range=["#48cae4", "#df7141"]),
+                            legend=None
+                        ),
+                        tooltip=["Status", "Count"]
+                    )
+                    .properties(height=CARD_HEIGHT, padding=CHART_PADDING)
+                )
+
+                st.altair_chart(chart, use_container_width=True)
+
+
+        # =========================
+        # CARD 4: SKILL GAPS (Neon Horizontal)
+        # =========================
+        with col2:
+            st.subheader("🧩 Skills You May Want to Strengthen")
+
+            skill_counts = defaultdict(int)
+            for s in history:
+                for sk in getattr(s, "skills", []):
+                    if sk.status == "MISSING":
+                        skill_counts[sk.skill_name] += 1
+
+            if not skill_counts:
+                st.info("No data")
+            else:
+                df = (
+                    pd.DataFrame([{"Skill": k, "Freq": v} for k, v in skill_counts.items()])
+                    .sort_values("Freq", ascending=False)
+                    .head(5)
+                )
+
+                chart = (
+                    alt.Chart(df)
+                    .mark_rule(color="#ff4ecd")
+                    .encode(x=alt.X("Freq:Q", title="Frequency of Missing Skill Occurrence"), y=alt.Y("Skill:N", sort='-x', title="Skills"))
+                    +
+                    alt.Chart(df)
+                    .mark_circle(size=120, color="#ff4ecd")
+                    .encode(
+                        x="Freq:Q",
+                        y="Skill:N",
+                        tooltip=["Skill", "Freq"]
+                    )
+                ).properties(height=CARD_HEIGHT, padding=CHART_PADDING).configure_view(strokeOpacity=0)
+
+                st.altair_chart(chart, use_container_width=True)
+
+
+
     # ---------------------------
     # PAGE: DASHBOARD
     # ---------------------------
-    if page == "📊 Dashboard & Analyzer":
+    elif page == "🧪 Analysis":
         db_session = next(get_db())
         last_session = crud.get_latest_session(db_session, CURRENT_USER_ID)
         is_editing = st.session_state.get('edit_session_id') is not None
-
+        # --- Agentic Notification ---
+          
         if not is_editing:
             # Notifications
             if 'notification_jobs' not in st.session_state: st.session_state['notification_jobs'] = []
@@ -213,53 +504,57 @@ else:
 
             if st.session_state['notification_jobs']:
                 with st.container():
-                    st.info(f"🔔 Found {len(st.session_state['notification_jobs'])} new jobs.")
-                    with st.expander("View Jobs"):
+                    st.markdown(f"""
+                        <div style="background: rgba(82, 183, 136, 0.1); padding: 20px; border-radius: 15px; border: 1px solid #52b788; margin-bottom: 20px;">
+                            <h4 style="margin:0; color:#52b788; font-size: 1.1rem;">👋 I've been looking around for you!</h4>
+                            <p style="color:#dae1e7; margin:5px 0 15px 0; font-size: 0.9rem;">
+                                Based on our last chat, I found <b>3 new roles</b> that might be a great fit for your journey.
+                            </p>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    with st.expander("✨ View these opportunities"):
                         for job in st.session_state['notification_jobs']:
                             st.markdown(f"**[{job['title']}]({job['link']})**")
                         if st.button("Clear"):
                             st.session_state['notification_jobs'] = []
                             st.rerun()
 
-            st.markdown(f"## 👋 Hi, {CURRENT_USER_NAME}!")
-            if last_session:
-                match_score = last_session.output.fit_score if last_session.output else 0
-                job_role = last_session.output.best_suited_job if last_session.output else "N/A"
-                st.markdown(f"""
-                <div style="background-color: #001F3F; padding: 20px; border-radius: 10px; border-left: 5px solid #4CAF50;">
-                    <p style="color:white; margin:0;">Last Scan: <strong>{job_role}</strong> | Score: <strong>{match_score}%</strong></p>
-                </div>""", unsafe_allow_html=True)
+            
+            
             st.markdown("---")
 
         # EDIT MODE BANNER
         if is_editing:
             st.warning(f"✏️ Editing Analysis ")
-            # if st.button("Cancel Edit"):
-            #     st.session_state['last_analysis'] = None
-            #     st.session_state['edit_session_id'] = None
-            #     st.session_state['resume_text'] = ""
-            #     st.session_state['jd_text'] = ""
-            #     st.session_state['target_role'] = ""
-            #     if 'resume_text_area' in st.session_state: del st.session_state['resume_text_area']
-            #     if 'jd_text_area' in st.session_state: del st.session_state['jd_text_area']
-            #     st.rerun()
 
         # INPUTS
-        st.subheader("🧠 New Analysis" if not is_editing else "✏️ Edit Analysis")
+        st.markdown(f"<div style='font-size: 1.9rem; font-weight: bold; color: #48d1cc;'>🌱 Let's work on your next move together</div>", unsafe_allow_html=True)
+        st.write("Upload your story (resume) and tell me where you'd like to go next.")
+        st.markdown("<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True)
+
         c1, c2 = st.columns(2)
         with c1:
-            st.markdown("### 1. Upload Resume")
+            st.markdown(f"<div style='font-size: 1.25rem; font-weight: bold;'>✨ 1. Your Background</div>", unsafe_allow_html=True)
+            # Using a helper text to make it feel guided
+            st.caption("How would you like to share your experience with me?")
+            
+
             utype = st.radio("Type", ["PDF Upload", "Paste Text"], horizontal=True)
             if utype == "PDF Upload":
                 f = st.file_uploader("PDF", type=["pdf"])
                 if f: st.session_state['resume_text'] = extract_text_from_pdf(f)
             else:
-                st.session_state['resume_text'] = st.text_area("Resume Text", value=st.session_state['resume_text'], height=300, key="resume_text_area")
+                st.session_state['resume_text'] = st.text_area("Paste your resume here...", value=st.session_state['resume_text'], height=245, key="resume_text_area")
+
 
         with c2:
-            st.markdown("### 2. Job Details")
-            st.session_state['target_role'] = st.text_input("Target Role", value=st.session_state['target_role'], key="target_role_input")
-            st.session_state['jd_text'] = st.text_area("Job Description", value=st.session_state['jd_text'], height=300, key="jd_text_area")
+            st.markdown(f"<div style='font-size: 1.25rem; font-weight: bold;'>🎯 2. Your Goal</div>", unsafe_allow_html=True)
+            st.session_state['target_role'] = st.text_input("What\'s the dream role we\'re looking at today?",value=st.session_state['target_role'], key="target_role_input", placeholder="e.g. Mobile Application Developer")
+            st.session_state['jd_text'] = st.text_area("Tell me a bit about the job requirements:", placeholder="Paste the job details here...", height=285, value=st.session_state['jd_text'],  key="jd_text_area")
+            
+            
+
+
 
         # ANALYZE BUTTON
         btn_txt = "🔄 Update" if is_editing else "🚀 Analyze"
@@ -272,7 +567,7 @@ else:
                     rd = get_resume_details(st.session_state['resume_text'])
                     an = compare_resume_with_jd(rd, st.session_state['jd_text'])
                     sc, kw, sk = get_final_score_and_suggestions(an)
-                    llm = analyze_with_llm(st.session_state['resume_text'], st.session_state['jd_text'])
+                    llm = analyze_with_llm(st.session_state['resume_text'], st.session_state['jd_text'],an['matched_skills'], an['missing_skills'])
                     
                     data = {
                         "fit_score": sc, "keyword_match": kw, "skill_match": sk,
@@ -336,12 +631,12 @@ else:
                     llm_main, llm_career = split_career_alignment(llm)
 
                     
-                    t1, t2, t3, t4 = st.tabs(["💡 AI Feedback","Career Alignment","🛠 Skills", "🌍 Jobs"])
-                    with t1: st.markdown(llm_main)
-                    with t2: 
-                        st.subheader("🎯 Career Alignment")
-                        st.markdown(llm_career)
-                    with t3:
+                    t1, t2, t3, t4 = st.tabs(["🛠 Skill Map","💡My Feedback","🧭 Other Paths to Explore", "🌍 Job openings for you"])
+                    # t1, t2, t3, t4 = st.tabs(["💡 Craft Analysis ","Your path","🛠 Your Toolkit", "🌍 Oppurtunities for you"])
+
+                    
+                   
+                    with t1:
                         c1, c2 = st.columns(2)
 
                         # -------- Missing Skills --------
@@ -363,18 +658,19 @@ else:
                                             st.markdown(f"- [{c['title']}]({c['link']})")
                                             if c.get("snippet"):
                                                 st.caption(c["snippet"])
+                                                
                             else:
-                                st.success("No missing skills 🎉")
+                                st.write("No missing skills 🎉")
+                    
 
                         # -------- Matched Skills --------
                         with c2:
                             st.success("Matched Skills")
                             for skill in an['matched_skills']:
                                 st.write(f"- {skill}")
-
-
-
-
+                    with t2: st.markdown(llm_main)
+                    with t3: 
+                        st.markdown(llm_career)
                     with t4:
                         jobs = find_jobs_realtime(st.session_state['target_role'])
                         if jobs:

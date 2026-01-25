@@ -67,11 +67,11 @@ def find_courses_for_skill(skill, limit=3):
                 "link": f"https://www.udemy.com/courses/search/?q={skill_safe}",
                 "snippet": "Hands-on practical courses."
             },
-            {
-                "title": f"🆓 Learn {skill} on freeCodeCamp",
-                "link": f"https://www.freecodecamp.org/news/search/?query={skill_safe}",
-                "snippet": "Free tutorials and guides."
-            }
+            # {
+            #     "title": f"🆓 Learn {skill} on freeCodeCamp",
+            #     "link": f"https://www.freecodecamp.org/news/search/?query={skill_safe}",
+            #     "snippet": "Free tutorials and guides."
+            # }
         ])
 
     return courses

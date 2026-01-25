@@ -3,13 +3,9 @@ import requests
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-
 load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-if not GROQ_API_KEY:
-    print("🚨 ERROR: GROQ_API_KEY is not loaded or is empty.")
-    # You might want to exit or raise an error here
 GROQ_BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 HEADERS = {
@@ -17,69 +13,99 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-def analyze_with_llm(resume_text, jd_text):
+# FIX: Added matched_skills and missing_skills as arguments
+def analyze_with_llm(resume_text, jd_text, matched_skills, missing_skills):
+    # Prepare skills as strings for the prompt
+    matched_str = ", ".join(matched_skills) if matched_skills else "None identified"
+    missing_str = ", ".join(missing_skills) if missing_skills else "None identified"
+
     prompt = f"""
+You are an AI Career Advisor and mentor.
 
-You are an AI Career Advisor. I will provide you with:
-1. A student's resume
-2. A job description (JD)
+You are speaking directly to a student who is preparing for their career. 
+Your role is to help them understand how well their current profile fits the target job and how they can realistically improve.
 
-Your task is to carefully analyze the resume against the JD and return a structured evaluation with the following sections: Write your response in a way as if you are directly talking to the person whose resume is being evaluated.
+IMPORTANT:
+- Do NOT re-calculate or infer skills.
+- Use the provided matched skills, missing skills, and weak areas as ground truth.
+- Focus on explanation, guidance, and encouragement rather than listing skills mechanically.
+- Keep the tone warm, supportive, and personalized — like a mentor reviewing their resume.
 
-### 1. Key Strengths
-- List 3–4 strong skills, experiences, or achievements from the resume that directly match the JD.
-- Explain why they are valuable for this role.
+---
 
+### 1. Your Key Strengths for This Role
+Using the matched skills and experiences provided:
+- Highlight 3–4 of the strongest alignments.
+- Explain *why* each strength matters for this job.
+- Frame them as “what you’re already doing right” and how they help you stand out.
 
+Speak directly to the student (e.g., “One thing you’re doing well is…”).
 
-### 3. Areas to Improve
-- Identify 3–4 skills or experiences that the student should improve or gain.
-- Provide practical suggestions (e.g., courses, projects, certifications).
+---
 
-### 4. Resume Improvement & Skill Development. Display it in a table format.
-For each missing or weak skill (choose 3–4 critical ones):
-* Skill/Experience: [Name]
-* Importance for this Job: [CRITICAL / IMPORTANT / NICE-TO-HAVE]
+### 2. Growth Areas to Focus On Next
+Based on the missing and matched skills provided in {matched_str} and {missing_str}:
+- Identify 3–4 important areas where growth would significantly improve their fit.
+- Explain *why these gaps matter* for this role.
+- Give practical, student-friendly suggestions such as:
+- specific project ideas
+- learning paths
+- certifications or hands-on practice
 
-and also provide courses for the missing skills ,with links from sites like coursera, edx, udemy only. Return only the course title and the platform name (e.g., Coursera, Udemy). Do not invent URLs."
+make it in a point form list.Choose the important skills from the missing skills list.
+Avoid generic advice — tailor suggestions to the student’s current level.
+---
 
-### 3. Career Role Alignment
-- Check if the student’s resume aligns well with the Job they are going for
-- If not, suggest 1–2 alternative job roles that align better with their skills.
-- For each suggested role, give a short description and why it could be a better match.But dont repeat the same job title as in the jd.
+### 3. Resume Improvement & Skill Development Roadmap
+Provide them with a roadmap to enhance their resume and skills over the next 3–4 months:
+- Break it down into clear, actionable steps.
+- Prioritize based on impact and feasibility for a student.
 
-Keep your tone supportive, clear, and practical. Avoid generic advice — make suggestions personalized to the provided resume and JD
+---
 
+### 4. Career Role Alignment 
+- Assess whether this job is a strong match for the student *at their current stage*.
+- Be honest but encouraging.
+
+If the alignment is weak:
+- Suggest 1–2 alternative roles that better fit their current skills.
+- Do NOT repeat the same job title as the JD.
+- For each role:
+  - Brief description
+  - Why it may be a better stepping stone right now
+Put the job suggestions in a point form list.
+Frame alternatives as strategic options, not failures.
+
+---
+
+### Tone & Style Guidelines
+- Speak directly to the student (“you”).
+- Be encouraging, realistic, and specific.
+- Avoid repeating skill names unnecessarily.
+- Avoid sounding like an ATS or checklist.
+- The goal is clarity, confidence, and a clear next plan.
+
+---
 
 Here is the data:
-Resume: {resume_text}
+
+Resume Text: {resume_text}
 Job Description: {jd_text}
 """
-
 
     payload = {
         "model": "llama-3.3-70b-versatile",
         "messages": [
-            {"role": "system", "content": "You are an expert in resume evaluation."},
+            {"role": "system", "content": "You are the CareerCraft Coach, a warm and supportive career mentor."},
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.4
+        "temperature": 0.5
     }
-    print("🔍 Debug: Sending request to Groq API...")
-    # print("🔍 Debug: GROQ_API_KEY loaded:", bool(GROQ_API_KEY))
-    # print("🔍 Debug: Headers being sent:", HEADERS)
-    # print("🔍 Debug: Payload being sent:", payload)
 
     try:
         response = requests.post(GROQ_BASE_URL, headers=HEADERS, json=payload)
         response.raise_for_status()
         result = response.json()
-        # print("✅ Success: Response received.")
         return result["choices"][0]["message"]["content"]
-    except requests.exceptions.HTTPError as http_err:
-        # print("❌ HTTPError:", response.text)
-        return f"⚠️ LLM evaluation failed: {http_err}"
     except Exception as e:
-        # print("❌ General Exception:", str(e))
-        return f"⚠️ LLM evaluation failed: {e}"
-# analyze_with_llm("sghagdh","jgdhd")
+        return f"⚠️ My apologies, I ran into a slight hiccup analyzing your profile: {e}"
