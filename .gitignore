@@ -7,3 +7,5 @@ __pycache__/
 
 # Ignore database files
 *.db
+.env
+.streamlit/secrets.toml
