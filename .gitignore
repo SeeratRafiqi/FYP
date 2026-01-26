@@ -6,6 +6,5 @@ __pycache__/
 *.pyc
 
 # Ignore database files
-*.db
 .env
 .streamlit/secrets.toml

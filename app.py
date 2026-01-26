@@ -24,18 +24,89 @@ from job_search import find_jobs_realtime
 # --- THEME STYLING ---
 st.markdown("""
     <style>
-    /* Main background */
+    /* 1. Force Dark Background for the whole app */
     .stApp {
-        background-color: #0E1117;
+        background-color: #0E1117 !important;
+        color: #FAFAFA !important;
+    }
+
+    /* 2. Fix all general text to be light/readable */
+    h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {
+        color: #FAFAFA !important;
+    }
+
+    /* 3. PRESERVE YOUR BRAND COLORS (Login Page) */
+    .hero-sub {
+        color: #4CAF50 !important; /* Keep the Green */
+        font-weight: bold !important;
+    }
+    .hero-title {
+        color: #6DB6FF !important; /* Keep the Blue */
+        font-weight: bold !important;
+    }
+
+    /* 4. FIX BUTTONS (Visible text for Login, Signup, New Chat, etc.) */
+    div.stButton > button {
+        background-color: #1e293b !important; 
+        color: #ffffff !important;           
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+    }
+
+    /* Primary (Analyze) button - Red with White Text for better visibility */
+    div.stButton > button[kind="primary"] {
+        background-color: #FF4B4B !important; 
+        color: white !important;           
+        font-weight: bold !important;
+    }
+
+    /* 5. FIX INPUT BOXES (Text areas and inputs) */
+    .stTextArea textarea, .stTextInput input {
+        background-color: #161a24 !important;
+        color: #FAFAFA !important;
+        border: 1px solid #334155 !important;
+    }
+
+    /* 6. SIDEBAR FIX */
+    [data-testid="stSidebar"] {
+        background-color: #161a24 !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #FAFAFA !important;
     }
     
-    
-
-    /* Metric Styling */
+    /* 7. METRIC CARD FIX */
     [data-testid="stMetricValue"] {
-        color: #00f2fe;
-        font-size: 37px;
-   
+        color: #72efdd !important;
+    } /* <--- ADDED THIS MISSING BRACKET */
+
+    /* 8. TOP NAVBAR FIX (Deploy, Running, etc.) */
+    header[data-testid="stHeader"] {
+        background-color: #0E1117 !important;
+    }
+    header[data-testid="stHeader"] * {
+        color: white !important;
+    }
+
+    /* 9. FILE UPLOADER (DROP BOX) FIX */
+    [data-testid="stFileUploader"] section {
+        background-color: #161a24 !important;
+        border: 1px dashed #48d1cc !important;
+    }
+    [data-testid="stFileUploader"] * {
+        color: white !important;
+    }
+            /* 10. BROWSE FILES BUTTON FIX */
+    [data-testid="stFileUploader"] button {
+        background-color: #1e293b !important;
+        color: white !important;
+        border: 1px solid #334155 !important;
+    }
+
+    [data-testid="stFileUploader"] button:hover {
+        border-color: #48d1cc !important;
+        background-color: #2d3748 !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -235,8 +306,8 @@ else:
 # ---------------------------
 
 # ---------------------------
-    CARD_HEIGHT = 273
-    CHART_PADDING = {"left": 10, "right": 10, "top": 10, "bottom": 20}
+    CARD_HEIGHT = 275
+    CHART_PADDING = {"left": 10, "right": 20, "top": 10, "bottom": 20}
 
     if page == "📊 Dashboard":
         
