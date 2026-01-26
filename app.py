@@ -74,12 +74,7 @@ st.markdown("""
     [data-testid="stSidebar"] * {
         color: #FAFAFA !important;
     }
-    
-    /* 7. METRIC CARD FIX */
-    [data-testid="stMetricValue"] {
-        color: #72efdd !important;
-    } /* <--- ADDED THIS MISSING BRACKET */
-
+   
     /* 8. TOP NAVBAR FIX (Deploy, Running, etc.) */
     header[data-testid="stHeader"] {
         background-color: #0E1117 !important;
@@ -96,7 +91,7 @@ st.markdown("""
     [data-testid="stFileUploader"] * {
         color: white !important;
     }
-            /* 10. BROWSE FILES BUTTON FIX */
+         /* 10. BROWSE FILES BUTTON FIX */
     [data-testid="stFileUploader"] button {
         background-color: #1e293b !important;
         color: white !important;
@@ -107,6 +102,52 @@ st.markdown("""
         border-color: #48d1cc !important;
         background-color: #2d3748 !important;
     }
+            /* FIX FOR METRIC TRUNCATION */
+    [data-testid="stMetricValue"] div {
+        white-space: normal !important; /* Allows text to wrap if needed */
+        word-break: keep-all !important; /* Prevents breaking words in half */
+        overflow: visible !important;   /* Ensures nothing is cut off */
+    }
+            /* Center the whole metric block */
+        div[data-testid="stMetric"] {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        }
+
+
+        /* Center the label text */
+        div[data-testid="stMetricLabel"] {
+        text-align: center;
+       
+        }
+
+
+        /* Center & slightly enlarge the value */
+        div[data-testid="stMetricValue"] {
+        text-align: center;
+        font-weight: 750;
+        border-color: #48d1cc !important;
+        
+        }
+            /* Center content inside metric cards */
+
+
+ .metric-label {
+        color: #ffffff !important;
+        font-size: 14px !important;
+        margin: 0 !important;
+    }
+    .metric-value-teal {
+        color: #72efdd !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        line-height: 1.1 !important;
+        margin-top: 5px !important;
+    }
+
     </style>
     """, unsafe_allow_html=True)
 
@@ -307,7 +348,7 @@ else:
 
 # ---------------------------
     CARD_HEIGHT = 275
-    CHART_PADDING = {"left": 10, "right": 20, "top": 10, "bottom": 20}
+    CHART_PADDING = {"left": 10, "right": 10, "top": 10, "bottom": 20}
 
     if page == "📊 Dashboard":
         
@@ -322,7 +363,6 @@ else:
        padding-bottom: 10px !important;
        padding-left: 15px !important;
        padding-right: 15px !important;
-
         background-color: #1e293b;
         border-radius: 20px !important; /* Extra rounded for a friendly feel */
         border: 1px solid #334155;
@@ -330,9 +370,10 @@ else:
 
     /* Supportive Metrics */
     [data-testid="stMetricValue"] {
-        color: #72efdd !important;
-        font-size: 40px !important;
-        font-weight: 500 !important;
+    color: #72efdd !important;
+    font-size: 35px !important; /* Adjusted for better fit */
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
     }
     
     /* Warm headers */
@@ -343,7 +384,7 @@ else:
         font-size: 1.1rem !important;
     }
         CARD_HEIGHT = 240
-       CHART_PADDING = {"left": 20, "right": 20, "top": 10, "bottom": 20}
+        CHART_PADDING = {"left": 0, "right": 20, "top": 10, "bottom": 20}
 
     </style>""", unsafe_allow_html=True)
        
@@ -357,7 +398,7 @@ else:
         db.close()
 
         # --- TOP KPI ROW (The "Inspiration" Look) ---
-        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+        m_col1, m_col2, m_col3, m_col4 = st.columns([1, 1, 1, 1])
         #st.markdown(f"""<div style="font-size: 1.1rem !important;"></div>""", unsafe_allow_html=True)
         total_scans = len(history)
         avg_total_fit = sum([s.output.fit_score for s in history if s.output]) / total_scans if total_scans > 0 else 0
@@ -377,17 +418,35 @@ else:
             else:
                 trend_label = "➖ Stable"
         
-        with m_col1:
-            st.metric("Total Scans", total_scans)
-        with m_col2:
-            st.metric("Avg Fit Score", f"{avg_total_fit:.1f}%")
-        with m_col3:
-            if last_session and last_session.output:
-                st.metric("Latest Score", f"{last_session.output.fit_score}%")
-            else:
-                st.metric("Latest Score", "N/A")
-        with m_col4:
-         st.metric("Progress Trend", trend_label)
+        # --- KPI ROW (separate from graph container) ---
+        
+            m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+
+            with m_col1:
+                with st.container(border=True):
+                    st.metric("Total Scans", total_scans)
+
+            with m_col2:
+                with st.container(border=True):
+                    st.metric("Avg Fit Score", f"{avg_total_fit:.1f}%")
+
+            with m_col3:
+                with st.container(border=True):
+                    st.metric(
+                        "Latest Score",
+                        f"{last_session.output.fit_score}%" if last_session and last_session.output else "N/A"
+                    )
+
+            with m_col4:
+                with st.container(border=True):
+                    role_val = last_session.output.best_suited_job if last_session and last_session.output else "N/A"
+                    st.markdown(f"""
+                        <div style="text-align: center; height: 85px; display: flex; flex-direction: column; justify-content: center;">
+                            <p class="metric-label">Our Recent Discovery</p>
+                            <p class="metric-value-teal">{role_val}</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+            
           
 
 
@@ -395,12 +454,10 @@ else:
 
         # --- LAST SCAN HERO BANNER ---
         if last_session:
-            match_score = last_session.output.fit_score if last_session.output else 0
-            job_role = last_session.output.best_suited_job if last_session.output else "N/A"
             st.markdown(f"""
                 <div style="  background: #161a24; width: 100%;  padding: 18px; border-radius: 10px; border-left: 4px solid #4facfe;margin-bottom: 20px;">
-                    <p style="color:#a0a0a0; margin:0; font-size: 1.0rem; font-weight: 500; text-transform: uppercase;">Our recent discovery</p>
-                    <h2 style="color:white; margin:0; font-size: 1.5rem;">{job_role} </span></h2>
+                    <p style="color:#a0a0a0; margin:0; font-size: 1.0rem; font-weight: 500; text-transform: uppercase;">Progress Trend</p>
+                    <h2 style="color:white; margin:0; font-size: 1.5rem;">{trend_label} </span></h2>
                     
                 </div>""", unsafe_allow_html=True)
 
@@ -785,7 +842,7 @@ else:
                         data = {"id": s.id, "resume_text": s.resume_text, "jd_text": s.jd_text, "job_title": job}
                         confirm_edit_dialog(data)
                     
-                    if c2.button("🗑️ Delete", key=f"d_{s.id}"):
+                    if c2.button("🗑️ Delete", type="primary", key=f"d_{s.id}"):
                         confirm_delete_dialog(s.id)
                     st.divider()
                     m1, m2, m3, m4 = st.columns(4)
