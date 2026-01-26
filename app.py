@@ -24,130 +24,85 @@ from job_search import find_jobs_realtime
 # --- THEME STYLING ---
 st.markdown("""
     <style>
-    /* 1. Force Dark Background for the whole app */
-    .stApp {
-        background-color: #0E1117 !important;
-        color: #FAFAFA !important;
+:root {
+        --primary-color: #ff4b4b;
+        --background-color: #0E1117;
+        --secondary-background-color: #262730;
+        --text-color: #fafafa;
+        --font: "Source Sans Pro", sans-serif;
     }
 
-    /* 2. Fix all general text to be light/readable */
-    h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {
-        color: #FAFAFA !important;
-    }
-
-    /* 3. PRESERVE YOUR BRAND COLORS (Login Page) */
-    .hero-sub {
-        color: #4CAF50 !important; /* Keep the Green */
-        font-weight: bold !important;
-    }
-    .hero-title {
-        color: #6DB6FF !important; /* Keep the Blue */
-        font-weight: bold !important;
-    }
-
-    /* 4. FIX BUTTONS (Visible text for Login, Signup, New Chat, etc.) */
-    div.stButton > button {
-        background-color: #1e293b !important; 
-        color: #ffffff !important;           
-        border: 1px solid #334155 !important;
-        border-radius: 8px !important;
-    }
-
-    /* Primary (Analyze) button - Red with White Text for better visibility */
-    div.stButton > button[kind="primary"] {
-        background-color: #FF4B4B !important; 
-        color: white !important;           
-        font-weight: bold !important;
-    }
-
-    /* 5. FIX INPUT BOXES (Text areas and inputs) */
-    .stTextArea textarea, .stTextInput input {
-        background-color: #161a24 !important;
-        color: #FAFAFA !important;
-        border: 1px solid #334155 !important;
-    }
-
-    /* 6. SIDEBAR FIX */
-    [data-testid="stSidebar"] {
-        background-color: #161a24 !important;
-    }
-    [data-testid="stSidebar"] * {
-        color: #FAFAFA !important;
-    }
-   
-    /* 8. TOP NAVBAR FIX (Deploy, Running, etc.) */
-    header[data-testid="stHeader"] {
+    /* 1. Main Background */
+    .stApp, [data-testid="stHeader"] {
         background-color: #0E1117 !important;
     }
-    header[data-testid="stHeader"] * {
+
+    /* 2. SIDEBAR FIX: Lighter than main page & White text */
+    [data-testid="stSidebar"], [data-testid="stSidebarContent"] {
+        background-color: #262730 !important;
+    }
+    [data-testid="stSidebar"] *, [data-testid="stSidebarNav"] span {
+        color: #fafafa !important;
+    }
+
+    /* 3. Lock Subtext and General Text */
+    p, span, label, .stCaptionContainer {
+        color: #fafafa !important;
+    }
+
+    /* 4. Buttons */
+    button[kind="secondary"] {
+        background-color: #262730 !important;
+        color: #fafafa !important;
+        border: 1px solid rgba(250, 250, 250, 0.2) !important;
+    }
+    
+    button[kind="primary"] {
+        background-color: #ff4b4b !important;
         color: white !important;
     }
 
-    /* 9. FILE UPLOADER (DROP BOX) FIX */
+    /* 5. Metrics */
+    [data-testid="stMetricValue"] {
+        color: #00f2fe !important;
+        font-size: 37px;
+    }
+    [data-testid="stMetricLabel"] {
+        color: #a0a0a0 !important;
+    }
+
+    /* 6. Headers */
+    h1, h2, h3 {
+        color: #f0f2f6 !important;
+        font-family: 'Inter', sans-serif;
+        font-weight: 300;
+    }
+    h3 { font-size: 1.1rem !important; }
+
+    /* 7. Input Boxes */
+    .stTextArea textarea, .stTextInput input {
+        background-color: #161a24 !important;
+        color: #FAFAFA !important;
+    }
+            
+    /* 8. File Uploader */
     [data-testid="stFileUploader"] section {
         background-color: #161a24 !important;
-        border: 1px dashed #48d1cc !important;
+      
     }
     [data-testid="stFileUploader"] * {
         color: white !important;
     }
-         /* 10. BROWSE FILES BUTTON FIX */
     [data-testid="stFileUploader"] button {
         background-color: #1e293b !important;
         color: white !important;
         border: 1px solid #334155 !important;
     }
-
-    [data-testid="stFileUploader"] button:hover {
-        border-color: #48d1cc !important;
-        background-color: #2d3748 !important;
-    }
-            /* FIX FOR METRIC TRUNCATION */
-    [data-testid="stMetricValue"] div {
-        white-space: normal !important; /* Allows text to wrap if needed */
-        word-break: keep-all !important; /* Prevents breaking words in half */
-        overflow: visible !important;   /* Ensures nothing is cut off */
-    }
-            /* Center the whole metric block */
-        div[data-testid="stMetric"] {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        }
-
-
-        /* Center the label text */
-        div[data-testid="stMetricLabel"] {
-        text-align: center;
-       
-        }
-
-
-        /* Center & slightly enlarge the value */
-        div[data-testid="stMetricValue"] {
-        text-align: center;
-        font-weight: 750;
-        border-color: #48d1cc !important;
-        
-        }
-            /* Center content inside metric cards */
-
-
- .metric-label {
-        color: #ffffff !important;
-        font-size: 14px !important;
-        margin: 0 !important;
-    }
-    .metric-value-teal {
+.minty-text {
         color: #72efdd !important;
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        line-height: 1.1 !important;
-        margin-top: 5px !important;
+    }.white-text {
+        color: #ffffff !important;
     }
-
     </style>
     """, unsafe_allow_html=True)
 
@@ -347,7 +302,7 @@ else:
 # ---------------------------
 
 # ---------------------------
-    CARD_HEIGHT = 275
+    CARD_HEIGHT = 273
     CHART_PADDING = {"left": 10, "right": 10, "top": 10, "bottom": 20}
 
     if page == "📊 Dashboard":
@@ -363,6 +318,7 @@ else:
        padding-bottom: 10px !important;
        padding-left: 15px !important;
        padding-right: 15px !important;
+
         background-color: #1e293b;
         border-radius: 20px !important; /* Extra rounded for a friendly feel */
         border: 1px solid #334155;
@@ -370,10 +326,9 @@ else:
 
     /* Supportive Metrics */
     [data-testid="stMetricValue"] {
-    color: #72efdd !important;
-    font-size: 35px !important; /* Adjusted for better fit */
-    font-weight: 600 !important;
-    line-height: 1.2 !important;
+        color: #72efdd !important;
+        font-size: 40px !important;
+        font-weight: 500 !important;
     }
     
     /* Warm headers */
@@ -384,7 +339,7 @@ else:
         font-size: 1.1rem !important;
     }
         CARD_HEIGHT = 240
-        CHART_PADDING = {"left": 0, "right": 20, "top": 10, "bottom": 20}
+       CHART_PADDING = {"left": 20, "right": 20, "top": 10, "bottom": 20}
 
     </style>""", unsafe_allow_html=True)
        
@@ -398,7 +353,7 @@ else:
         db.close()
 
         # --- TOP KPI ROW (The "Inspiration" Look) ---
-        m_col1, m_col2, m_col3, m_col4 = st.columns([1, 1, 1, 1])
+        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
         #st.markdown(f"""<div style="font-size: 1.1rem !important;"></div>""", unsafe_allow_html=True)
         total_scans = len(history)
         avg_total_fit = sum([s.output.fit_score for s in history if s.output]) / total_scans if total_scans > 0 else 0
@@ -418,35 +373,23 @@ else:
             else:
                 trend_label = "➖ Stable"
         
-        # --- KPI ROW (separate from graph container) ---
-        
-            m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+        with m_col1:
+            st.metric("Total Scans", total_scans)
+        with m_col2:
+            st.metric("Avg Fit Score", f"{avg_total_fit:.1f}%")
+        with m_col3:
+            if last_session and last_session.output:
+                st.metric("Latest Score", f"{last_session.output.fit_score}%")
+            else:
+                st.metric("Latest Score", "N/A")
+        with m_col4:
+                st.markdown(f"""
+                    <div style="text-align: center; height: 70px; display: flex; flex-direction: column; justify-content: center;">
+                        <div class="white-text" style="margin:0;font-size: 0.8rem; font-weight: 500; text-transform: uppercase;">Our Recent Discovery</div>
+                        <div class="minty-text" style="margin:0; font-size: 1.5rem; font-weight: 700;">{trend_label}</div>
+                    </div>
+                """, unsafe_allow_html=True)
 
-            with m_col1:
-                with st.container(border=True):
-                    st.metric("Total Scans", total_scans)
-
-            with m_col2:
-                with st.container(border=True):
-                    st.metric("Avg Fit Score", f"{avg_total_fit:.1f}%")
-
-            with m_col3:
-                with st.container(border=True):
-                    st.metric(
-                        "Latest Score",
-                        f"{last_session.output.fit_score}%" if last_session and last_session.output else "N/A"
-                    )
-
-            with m_col4:
-                with st.container(border=True):
-                    role_val = last_session.output.best_suited_job if last_session and last_session.output else "N/A"
-                    st.markdown(f"""
-                        <div style="text-align: center; height: 85px; display: flex; flex-direction: column; justify-content: center;">
-                            <p class="metric-label">Our Recent Discovery</p>
-                            <p class="metric-value-teal">{role_val}</p>
-                        </div>
-                    """, unsafe_allow_html=True)
-            
           
 
 
@@ -454,10 +397,12 @@ else:
 
         # --- LAST SCAN HERO BANNER ---
         if last_session:
+            match_score = last_session.output.fit_score if last_session.output else 0
+            job_role = last_session.output.best_suited_job if last_session.output else "N/A"
             st.markdown(f"""
                 <div style="  background: #161a24; width: 100%;  padding: 18px; border-radius: 10px; border-left: 4px solid #4facfe;margin-bottom: 20px;">
-                    <p style="color:#a0a0a0; margin:0; font-size: 1.0rem; font-weight: 500; text-transform: uppercase;">Progress Trend</p>
-                    <h2 style="color:white; margin:0; font-size: 1.5rem;">{trend_label} </span></h2>
+                    <p style="color:#a0a0a0; margin:0; font-size: 1.0rem; font-weight: 500; text-transform: uppercase;">Our recent discovery</p>
+                    <h2 style="color:white; margin:0; font-size: 1.5rem;">{job_role} </span></h2>
                     
                 </div>""", unsafe_allow_html=True)
 
@@ -662,7 +607,7 @@ else:
 
         c1, c2 = st.columns(2)
         with c1:
-            st.markdown(f"<div style='font-size: 1.25rem; font-weight: bold;'>✨ 1. Your Background</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size: 1.25rem; font-weight: bold; color: #ffffff;'>✨ 1. Your Background</div>", unsafe_allow_html=True)
             # Using a helper text to make it feel guided
             st.caption("How would you like to share your experience with me?")
             
@@ -676,7 +621,7 @@ else:
 
 
         with c2:
-            st.markdown(f"<div style='font-size: 1.25rem; font-weight: bold;'>🎯 2. Your Goal</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size: 1.25rem; font-weight: bold;color: #ffffff;'>🎯 2. Your Goal</div>", unsafe_allow_html=True)
             st.session_state['target_role'] = st.text_input("What\'s the dream role we\'re looking at today?",value=st.session_state['target_role'], key="target_role_input", placeholder="e.g. Mobile Application Developer")
             st.session_state['jd_text'] = st.text_area("Tell me a bit about the job requirements:", placeholder="Paste the job details here...", height=285, value=st.session_state['jd_text'],  key="jd_text_area")
             
@@ -842,7 +787,7 @@ else:
                         data = {"id": s.id, "resume_text": s.resume_text, "jd_text": s.jd_text, "job_title": job}
                         confirm_edit_dialog(data)
                     
-                    if c2.button("🗑️ Delete", type="primary", key=f"d_{s.id}"):
+                    if c2.button("🗑️ Delete", key=f"d_{s.id}"):
                         confirm_delete_dialog(s.id)
                     st.divider()
                     m1, m2, m3, m4 = st.columns(4)
