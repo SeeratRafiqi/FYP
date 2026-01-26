@@ -103,6 +103,7 @@ st.markdown("""
     }.white-text {
         color: #ffffff !important;
     }
+            
     </style>
     """, unsafe_allow_html=True)
 
@@ -137,14 +138,14 @@ def show_login_page():
         }
         .hero-title {
             font-size: 3rem !important;
-            font-weight: 1000;
-            color: #6DB6FF ;
-            margin-bottom: 0;
+            font-weight: 1000 !important;
+            color: #6DB6FF !important;
+            margin-bottom: 0!important;
         }
         .hero-sub {
-            color: #4CAF50;
+            color: #4CAF50 !important;
             font-size: 2.7rem !important;
-            letter-spacing: 2px;
+            letter-spacing: 2px!important;
         } }
     [data-testid="stMetricLabel"] {
         color: #a0a0a0;
@@ -154,8 +155,8 @@ def show_login_page():
     h3 {
         color: #f0f2f6;
         font-family: 'Inter', sans-serif;
-        font-weight: 300;
-        letter-spacing: 0.5px;
+        font-weight: 300 !important;
+        letter-spacing: 0.5px !important;
         font-size: 1.1rem !important;
     }
         </style>
@@ -165,7 +166,7 @@ def show_login_page():
 
     with col1:
         st.markdown("<br><br><br>", unsafe_allow_html=True)
-        st.markdown('<p class="hero-sub">DISCOVER YOUR EDGE</p>', unsafe_allow_html=True)
+        st.markdown('<p class="hero-sub !important">DISCOVER YOUR EDGE</p>', unsafe_allow_html=True)
         st.markdown('<p class="hero-title">CareerCraft </p>', unsafe_allow_html=True)
         st.markdown("### Step into your future, smartly.")
         st.markdown(""" <div style="font-size: 20px; color: #555; margin-top: 10px;">   An agentic resume analyzer powered by LLMs and Real-time Job Search.
