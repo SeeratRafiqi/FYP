@@ -283,6 +283,9 @@ else:
             st.session_state['edit_session_id'] = None
             st.session_state['is_editing'] = False
 
+            # ✅ FORCE redirect to Analysis tab
+            st.session_state['current_page'] = "🧪 Analysis"
+
             st.rerun()
         
         if selected_page != st.session_state['current_page']:
@@ -293,6 +296,16 @@ else:
         st.info(f"User: {CURRENT_USER_NAME}")
         if st.button("Logout"):
             st.session_state['user_id'] = None
+            st.session_state['resume_text'] = ""
+            st.session_state['jd_text'] = ""
+            st.session_state['target_role'] = ""
+            st.session_state['last_analysis'] = None
+            st.session_state['edit_session_id'] = None
+            st.session_state['is_editing'] = False
+
+
+            # Optional: reset page
+            st.session_state['current_page'] = "📊 Dashboard"
             st.rerun()
 
     # --- PAGES ---
