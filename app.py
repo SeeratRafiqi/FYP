@@ -6,7 +6,6 @@ from course_search import find_courses_for_skill
 from collections import defaultdict
 import pandas as pd
 import altair as alt
-from collections import defaultdict
 
 # --- 1. CONFIGURATION ---
 st.set_page_config(page_title="CareerCraft AI", page_icon="🚀", layout="wide")
@@ -399,7 +398,7 @@ else:
         with m_col4:
                 st.markdown(f"""
                     <div style="text-align: center; height: 70px; display: flex; flex-direction: column; justify-content: center;">
-                        <div class="white-text" style="margin:0;font-size: 0.8rem; font-weight: 500; text-transform: uppercase;">Our Recent Discovery</div>
+                        <div class="white-text" style="margin:0;font-size: 0.8rem; font-weight: 500; text-transform: uppercase;">Our Recent Score variation</div>
                         <div class="minty-text" style="margin:0; font-size: 1.5rem; font-weight: 700;">{trend_label}</div>
                     </div>
                 """, unsafe_allow_html=True)
@@ -697,11 +696,11 @@ else:
 
                     # Results
                     m1, m2, m3, m4 = st.columns(4)
-                    m1.metric("Fit", f"{sc}%")
-                    m2.metric("Keyword", f"{kw}%")
-                    m3.metric("Skill", f"{sk}%")
-                    m4.metric("Missing", len(an['missing_skills']), delta_color="inverse")
-                    
+                    m1.metric("Fit Score", f"{sc}%")
+                    m2.metric("Keyword Match", f"{kw}%")
+                    m3.metric("Skill Match", f"{sk}%")
+                    m4.metric("Missing Skills", len(an['missing_skills']), delta_color="inverse")
+
                     def split_career_alignment(llm_text):
                      markers = [
                         "### 4. Career Role Alignment",
