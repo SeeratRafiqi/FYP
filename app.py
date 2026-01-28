@@ -301,6 +301,8 @@ else:
             st.session_state['last_analysis'] = None
             st.session_state['edit_session_id'] = None
             st.session_state['is_editing'] = False
+            st.session_state['notification_jobs'] = []
+            st.session_state['has_checked_notifications'] = False
 
 
             # Optional: reset page
